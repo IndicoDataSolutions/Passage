@@ -15,14 +15,6 @@ def dropout(X, p=0.):
         X = X / retain_prob * srng.binomial(X.shape, p=retain_prob, dtype=theano.config.floatX)
     return X
 
-def sample_noise(shape, scale=0.):
-    return srng.normal(shape, std=scale, dtype=theano.config.floatX)
-
-def unit_norm(x):
-    norms = T.sqrt(T.sum(T.sqr(x), axis=0))
-    x = x/norms
-    return x
-
 def theano_one_hot(idx, n):
     z = T.zeros((idx.shape[0], n))
     one_hot = T.set_subtensor(z[T.arange(idx.shape[0]), idx], 1)
@@ -56,7 +48,7 @@ class OneHot(object):
 
 class SimpleRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', init='orthogonal', truncate_gradient=-1, seq_output=True, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.init = getattr(inits, init)
@@ -101,7 +93,7 @@ class SimpleRecurrent(object):
 
 class LstmRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=True, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.gate_activation = getattr(activations, gate_activation)
@@ -163,7 +155,7 @@ class LstmRecurrent(object):
 
 class GatedRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=True, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.gate_activation = getattr(activations, gate_activation)
