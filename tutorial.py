@@ -1,5 +1,6 @@
-import pandas as pd
+import os
 
+import pandas as pd
 from sklearn import metrics
 
 from passage.preprocessing import Tokenizer
@@ -7,7 +8,10 @@ from passage.layers import Embedding, GatedRecurrent, Dense
 from passage.model import RNN
 
 def load_gender_data(ntrain=10000, ntest=10000):
-	data = pd.read_csv('data/blogger_data_2.csv', nrows=ntrain+ntest)
+	file_loc = os.path.dirname(os.path.realpath(__file__))
+	relative_path = "data/blogger_data_2.csv"
+	fullpath = os.path.join(file_loc, relative_path)
+	data = pd.read_csv(fullpath, nrows=ntrain+ntest)
 	X = data['text'].values
 	X = [str(x) for x in X] #ugly nan cleaner
 	Y = data['gender'].values

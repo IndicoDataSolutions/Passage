@@ -1,6 +1,6 @@
 import theano
 import theano.tensor as T
-from theano.tensor.extra_ops import repeat, to_one_hot
+from theano.tensor.extra_ops import repeat
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 from utils import shared0s
