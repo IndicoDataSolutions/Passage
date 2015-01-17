@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-	name='passage', 
-	version='0.1',
+    name='passage', 
+    version='0.1',
     packages=find_packages(),
     description="""
         A little library for text analysis with RNNs.
