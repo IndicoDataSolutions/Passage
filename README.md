@@ -15,11 +15,13 @@ Using Passage to do binary classification of text, this example:
 * Creates the model with that structure and a cost to be optimized.
 * Trains the model for one iteration over the training text.
 * Uses the model and tokenizer to predict on new text.
+* Saves and loads the model.
 
 ```
 from passage.preprocessing import Tokenizer
 from passage.layers import Embedding, GatedRecurrent, Dense
-from passage.model import RNN
+from passage.models import RNN
+from passage.utils import save, load
 
 tokenizer = Tokenizer()
 train_tokens = tokenizer.fit_transform(train_text)
@@ -34,6 +36,8 @@ model = RNN(layers=layers, cost='BinaryCrossEntropy')
 model.fit(train_tokens, train_labels)
 
 model.predict(tokenizer.transform(test_text))
+save(model, 'save_test.pkl')
+model = load('save_test.pkl')
 ```
 
 Where: 
