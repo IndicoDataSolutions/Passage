@@ -1,8 +1,6 @@
 import numpy as np
 import theano
 import theano.tensor as T
-import layers
-import models
 import cPickle
 
 def iter_data(*data, **kwargs):
@@ -39,6 +37,8 @@ def case_insensitive_import(module, name):
     return getattr(module, mapping[name.lower()])
 
 def load(path):
+    import layers
+    import models
     model = cPickle.load(open(path))
     model_class = getattr(models, model['model'])
     model['config']['layers'] = [getattr(layers, layer['layer'])(**layer['config']) for layer in model['config']['layers']]

@@ -43,7 +43,7 @@ class Embedding(object):
 
 class OneHot(object):
 
-    def __init__(self, n_features):
+    def __init__(self, n_features, weights=None):
         self.settings = locals()
         del self.settings['self']
         self.size = n_features
