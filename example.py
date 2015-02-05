@@ -5,7 +5,8 @@ from sklearn import metrics
 
 from passage.preprocessing import Tokenizer
 from passage.layers import Embedding, GatedRecurrent, Dense
-from passage.model import RNN
+from passage.models import RNN
+from passage.utils import load, save
 
 def load_gender_data(ntrain=10000, ntest=10000):
     file_loc = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +38,7 @@ layers = [
 ]
 
 model = RNN(layers=layers, cost='bce') #bce is classification loss for binary classification and sigmoid output
-for i in range(100):
+for i in range(2):
     model.fit(trX, trY, n_epochs=1)
     tr_preds = model.predict(trX[:len(teY)])
     te_preds = model.predict(teX)
@@ -46,3 +47,15 @@ for i in range(100):
     te_acc = metrics.accuracy_score(teY, te_preds > 0.5)
 
     print i, tr_acc, te_acc
+
+save(model, 'save_test.pkl') # How to save
+
+model = load('save_test.pkl') # How to load
+
+tr_preds = model.predict(trX[:len(teY)])
+te_preds = model.predict(teX)
+
+tr_acc = metrics.accuracy_score(trY[:len(teY)], tr_preds > 0.5)
+te_acc = metrics.accuracy_score(teY, te_preds > 0.5)
+
+print tr_acc, te_acc #should be same scores as above

@@ -7,7 +7,6 @@ from time import time
 import costs
 import updates
 import iterators 
-from iterators import iter_data, padded
 from utils import case_insensitive_import
 from preprocessing import LenFilter, standardize_targets
 
@@ -16,7 +15,9 @@ def flatten(l):
 
 class RNN(object):
 
-    def __init__(self, layers, cost, updater='Adam', verbose=2):
+    def __init__(self, layers, cost, updater='Adam', verbose=2, Y=T.matrix(), iterator='SortedPadded'):
+        self.settings = locals()
+        del self.settings['self']
         self.layers = layers
 
         if isinstance(cost, basestring):
@@ -25,9 +26,14 @@ class RNN(object):
             self.cost = cost
 
         if isinstance(updater, basestring):
-            updater = case_insensitive_import(updates, updater)()
+            self.updater = case_insensitive_import(updates, updater)()
         else:
-            updater = updater
+            self.updater = updater
+
+        if isinstance(iterator, basestring):
+            self.iterator = getattr(iterators, iterator)()
+        else:
+            self.iterator = iterator
 
         self.verbose = verbose
         for i in range(1, len(self.layers)):
@@ -37,21 +43,19 @@ class RNN(object):
         self.X = self.layers[0].input
         self.y_tr = self.layers[-1].output(dropout_active=True)
         self.y_te = self.layers[-1].output(dropout_active=False)
-        self.Y = T.matrix()
+        self.Y = Y
 
         cost = self.cost(self.Y, self.y_tr)
-        self.updates = updater.get_updates(self.params, cost)
+        self.updates = self.updater.get_updates(self.params, cost)
 
         self._train = theano.function([self.X, self.Y], cost, updates=self.updates)
         self._cost = theano.function([self.X, self.Y], cost)
         self._predict = theano.function([self.X], self.y_te)
 
-    def fit(self, trX, trY, batch_size=64, n_epochs=1, len_filter=LenFilter(), iterator='SortedPadded'):
-        self.batch_size = batch_size
+    def fit(self, trX, trY, batch_size=64, n_epochs=1, len_filter=LenFilter()):
         if len_filter is not None:
             trX, trY = len_filter.filter(trX, trY)
         trY = standardize_targets(trY, cost=self.cost)
-        self.iterator = getattr(iterators, iterator)(trX, trY, size=batch_size)
 
         n = 0.
         stats = []
@@ -59,7 +63,7 @@ class RNN(object):
         costs = []
         for e in range(n_epochs):
             epoch_costs = []
-            for xmb, ymb in self.iterator.iter():
+            for xmb, ymb in self.iterator.iterXY(trX, trY):
                 c = self._train(xmb, ymb)
                 epoch_costs.append(c)
                 n += len(ymb)
@@ -82,29 +86,24 @@ class RNN(object):
 
     def predict(self, X):
         if isinstance(self.iterator, iterators.Padded):
-            return self.predict_padded(X)
+            return self.predict_iterator(X)
         elif isinstance(self.iterator, iterators.SortedPadded):
-            return self.predict_sorted_padded(X)
+            return self.predict_idxs(X)
         else:
             raise NotImplementedError
 
-    def predict_padded(self, X):
+    def predict_iterator(self, X):
         preds = []
-        for xmb in iter_data(X, size=self.batch_size):
-            xmb = padded(xmb)
+        for xmb in self.iterator.iterX(X):
             pred = self._predict(xmb)
             preds.append(pred)
         return np.vstack(preds)
 
-    def predict_sorted_padded(self, X):
+    def predict_idxs(self, X):
         preds = []
         idxs = []
-        for x_chunk, chunk_idxs in iter_data(X, np.arange(len(X)), size=self.batch_size*20):
-            sort = np.argsort([len(x) for x in x_chunk])
-            x_chunk = [x_chunk[idx] for idx in sort]
-            idxs.extend(chunk_idxs[sort])
-            for xmb in iter_data(x_chunk, size=self.batch_size):
-                xmb = padded(xmb)
-                pred = self._predict(xmb)
-                preds.append(pred)
+        for xmb, idxmb in self.iterator.iterX(X):
+            pred = self._predict(xmb)
+            preds.append(pred)
+            idxs.extend(idxmb)
         return np.vstack(preds)[np.argsort(idxs)]

@@ -2,7 +2,7 @@ import theano
 import theano.tensor as T
 import numpy as np
 
-from utils import shared0s, floatX
+from theano_utils import shared0s, floatX
 
 def clip_norm(g, c, n):
     if c > 0:

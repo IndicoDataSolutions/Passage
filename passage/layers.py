@@ -3,7 +3,7 @@ import theano.tensor as T
 from theano.tensor.extra_ops import repeat
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-from utils import shared0s
+from theano_utils import shared0s, floatX
 import activations
 import inits
 
@@ -24,7 +24,9 @@ srng = RandomStreams()
 
 class Embedding(object):
 
-    def __init__(self, size=128, n_features=256, init='uniform'):
+    def __init__(self, size=128, n_features=256, init='uniform', weights=None):
+        self.settings = locals()
+        del self.settings['self']
         self.init = getattr(inits, init)
         self.size = size
         self.n_features = n_features
@@ -32,12 +34,18 @@ class Embedding(object):
         self.wv = self.init((self.n_features, self.size))
         self.params = [self.wv]
 
+        if weights is not None:
+            for param, weight in zip(self.params, weights):
+                param.set_value(floatX(weight))
+
     def output(self, dropout_active=False):
         return self.wv[self.input]
 
 class OneHot(object):
 
     def __init__(self, n_features):
+        self.settings = locals()
+        del self.settings['self']
         self.size = n_features
         self.n_features = n_features
         self.input = T.imatrix()
@@ -48,7 +56,9 @@ class OneHot(object):
 
 class SimpleRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., weights=None):
+        self.settings = locals()
+        del self.settings['self']
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.init = getattr(inits, init)
@@ -56,6 +66,7 @@ class SimpleRecurrent(object):
         self.truncate_gradient = truncate_gradient
         self.seq_output = seq_output
         self.p_drop = p_drop
+        self.weights = weights
 
     def connect(self, l_in):
         self.l_in = l_in
@@ -70,6 +81,10 @@ class SimpleRecurrent(object):
             self.b_in = shared0s((self.size))
             self.w_rec = self.init((self.size, self.size))
         self.params = [self.h0, self.w_in, self.b_in, self.w_rec]
+        
+        if self.weights is not None:
+            for param, weight in zip(self.params, self.weights):
+                param.set_value(floatX(weight))    
 
     def step(self, x_t, h_tm1, w):
         h_t = self.activation(x_t + T.dot(h_tm1, w))
@@ -93,7 +108,9 @@ class SimpleRecurrent(object):
 
 class LstmRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., weights=None):
+        self.settings = locals()
+        del self.settings['self']
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.gate_activation = getattr(activations, gate_activation)
@@ -102,6 +119,7 @@ class LstmRecurrent(object):
         self.truncate_gradient = truncate_gradient
         self.seq_output = seq_output
         self.p_drop = p_drop
+        self.weights = weights
 
     def connect(self, l_in):
         self.l_in = l_in
@@ -125,6 +143,10 @@ class LstmRecurrent(object):
         self.params = [self.w_i, self.w_f, self.w_o, self.w_c, 
             self.u_i, self.u_f, self.u_o, self.u_c,  
             self.b_i, self.b_f, self.b_o, self.b_c]
+
+        if self.weights is not None:
+            for param, weight in zip(self.params, self.weights):
+                param.set_value(floatX(weight))    
 
     def step(self, xi_t, xf_t, xo_t, xc_t, h_tm1, c_tm1, u_i, u_f, u_o, u_c):
         i_t = self.gate_activation(xi_t + T.dot(h_tm1, u_i))
@@ -151,11 +173,13 @@ class LstmRecurrent(object):
         if self.seq_output:
             return out
         else:
-            return out[-1] 
+            return out[-1]
 
 class GatedRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0.):
+    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., weights=None):
+        self.settings = locals()
+        del self.settings['self']   
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.gate_activation = getattr(activations, gate_activation)
@@ -164,6 +188,7 @@ class GatedRecurrent(object):
         self.truncate_gradient = truncate_gradient
         self.seq_output = seq_output
         self.p_drop = p_drop
+        self.weights = weights
 
     def connect(self, l_in):
         self.l_in = l_in
@@ -189,6 +214,11 @@ class GatedRecurrent(object):
             self.b_h = shared0s((self.size))   
 
         self.params = [self.h0, self.w_z, self.w_r, self.w_h, self.u_z, self.u_r, self.u_h, self.b_z, self.b_r, self.b_h]
+
+        if self.weights is not None:
+            for param, weight in zip(self.params, self.weights):
+                param.set_value(floatX(weight))    
+
 
     def step(self, xz_t, xr_t, xh_t, h_tm1, u_z, u_r, u_h):
         z = self.gate_activation(xz_t + T.dot(h_tm1, u_z))
@@ -216,12 +246,15 @@ class GatedRecurrent(object):
             return out[-1]  
 
 class Dense(object):
-    def __init__(self, size=256, activation='rectify', init='orthogonal', p_drop=0.):
+    def __init__(self, size=256, activation='rectify', init='orthogonal', p_drop=0., weights=None):
+        self.settings = locals()
+        del self.settings['self']
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.init = getattr(inits, init)
         self.size = size
         self.p_drop = p_drop
+        self.weights = weights
 
     def connect(self, l_in):
         self.l_in = l_in
@@ -233,6 +266,10 @@ class Dense(object):
             self.w = self.init((self.n_in, self.size))
             self.b = shared0s((self.size))
         self.params = [self.w, self.b]
+        
+        if self.weights is not None:
+            for param, weight in zip(self.params, self.weights):
+                param.set_value(floatX(weight))            
 
     def output(self, pre_act=False, dropout_active=False):
         X = self.l_in.output(dropout_active=dropout_active)
@@ -250,3 +287,4 @@ class Dense(object):
             out = out.reshape((shape[0], shape[1], self.size))
 
         return out
+

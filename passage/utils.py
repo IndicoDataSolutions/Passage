@@ -1,14 +1,9 @@
 import numpy as np
 import theano
 import theano.tensor as T
-
-def one_hot(X, n=None, negative_class=0.):
-    X = np.asarray(X).flatten()
-    if n is None:
-        n = np.max(X) + 1
-    Xoh = np.ones((len(X), n)) * negative_class
-    Xoh[np.arange(len(X)), X] = 1.
-    return Xoh
+import layers
+import models
+import cPickle
 
 def iter_data(*data, **kwargs):
     size = kwargs.get('size', 128)
@@ -39,21 +34,25 @@ def shuffle(*data):
     else:
         return [[d[idx] for idx in idxs] for d in data]
 
-def intX(X):
-    return np.asarray(X, dtype=np.int32)
-
-def floatX(X):
-    return np.asarray(X, dtype=theano.config.floatX)
-
-def sharedX(X, dtype=theano.config.floatX, name=None):
-    return theano.shared(np.asarray(X, dtype=dtype), name=name)
-
-def shared0s(shape, dtype=theano.config.floatX, name=None):
-    return sharedX(np.zeros(shape), dtype=dtype, name=name)
-
-def downcast_float(X):
-    return np.asarray(X, dtype=np.float32)
-
 def case_insensitive_import(module, name):
     mapping = dict((k.lower(), k) for k in dir(module))
     return getattr(module, mapping[name.lower()])
+
+def load(path):
+    model = cPickle.load(open(path))
+    model_class = getattr(models, model['model'])
+    model['config']['layers'] = [getattr(layers, layer['layer'])(**layer['config']) for layer in model['config']['layers']]
+    model = model_class(**model['config'])
+    return model
+
+def save(model, path):
+    layer_configs = []
+    for layer in model.layers:
+        layer_config = layer.settings
+        layer_name = layer.__class__.__name__
+        weights = [p.get_value() for p in layer.params]
+        layer_config['weights'] = weights
+        layer_configs.append({'layer':layer_name, 'config':layer_config})
+    model.settings['layers'] = layer_configs
+    serializable_model = {'model':model.__class__.__name__, 'config':model.settings}
+    cPickle.dump(serializable_model, open(path, 'wb'))
