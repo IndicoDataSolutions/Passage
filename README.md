@@ -7,6 +7,10 @@ Install
 ```
 python setup.py develop
 ```
+or via pip
+```
+sudo pip install passage
+```
 
 Using Passage to do binary classification of text, this example:
 
