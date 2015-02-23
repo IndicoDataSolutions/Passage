@@ -7,7 +7,7 @@ from time import time
 import costs
 import updates
 import iterators 
-from utils import case_insensitive_import
+from utils import case_insensitive_import, save
 from preprocessing import LenFilter, standardize_targets
 
 def flatten(l):
@@ -52,7 +52,22 @@ class RNN(object):
         self._cost = theano.function([self.X, self.Y], cost)
         self._predict = theano.function([self.X], self.y_te)
 
-    def fit(self, trX, trY, batch_size=64, n_epochs=1, len_filter=LenFilter()):
+    def fit(self, trX, trY, batch_size=64, n_epochs=1, len_filter=LenFilter(), snapshot_freq=1, path=None):
+        """Train model on given training examples and return the list of costs after each minibatch is processed.
+
+        Args:
+          trX (list) -- Inputs
+          trY (list) -- Outputs
+          batch_size (int, optional) -- number of examples in a minibatch (default 64)
+          n_epochs (int, optional)  -- number of epochs to train for (default 1)
+          len_filter (object, optional) -- object to filter training example by length (default LenFilter())
+          snapshot_freq (int, optional) -- number of epochs between saving model snapshots (default 1)
+          path (str, optional) -- prefix of path where model snapshots are saved.
+            If None, no snapshots are saved (default None)
+
+        Returns:
+          list -- costs of model after processing each minibatch
+        """
         if len_filter is not None:
             trX, trY = len_filter.filter(trX, trY)
         trY = standardize_targets(trY, cost=self.cost)
@@ -82,6 +97,8 @@ class RNN(object):
                 sys.stdout.write("\n")
             elif self.verbose == 1:
                 print status
+            if path and e % snapshot_freq == 0:
+                save(self, "{0}.{1}".format(path, e))
         return costs
 
     def predict(self, X):
