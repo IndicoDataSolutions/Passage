@@ -1,2 +1,4 @@
 Alec Radford <alec@indico.io>
 Madison May <madison@indico.io>
+Slater Victoroff <slater@indico.io>
+Grzegorz Chrupala <pitekus@gmail.com>

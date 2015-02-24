@@ -3,8 +3,11 @@ A little library for text analysis with RNNs.
 
 Warning: very alpha, work in progress.
 
-Install
+## Install
+
+via Github (version under active development)
 ```
+git clone http://github.com/IndicoDataSolutions/passage.git
 python setup.py develop
 ```
 or via pip
@@ -12,6 +15,7 @@ or via pip
 sudo pip install passage
 ```
 
+## Example
 Using Passage to do binary classification of text, this example:
 
 * Tokenizes some training text, converting it to a format Passage can use.
@@ -49,3 +53,12 @@ Where:
 * train_text is a list of strings ['hello world', 'foo bar']
 * train_labels is a list of labels [0, 1]
 * test_text is another list of strings
+
+## Datasets
+
+Without sizeable datasets RNNs have difficulty achieving results better than traditional sparse linear models. Below are a few datasets that are appropriately sized, useful for experimentation. Hopefully this list will grow over time, please feel free to propose new datasets for inclusion through either an issue or a pull request.
+
+**__Note__**: __None of these datasets were created by indico, not should their inclusion here indicate any kind of endorsement__
+
+Blogger Dataset: http://www.cs.biu.ac.il/~koppel/blogs/blogs.zip (Age and gender data)
+
