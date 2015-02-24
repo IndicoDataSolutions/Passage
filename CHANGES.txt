@@ -1,1 +1,4 @@
 v0.2.1, Mon Feb 16 -- Added pip package, updated README
+v0.2.2, Tue Feb 24 -- Updated readme, added readme to pip page
+v0.2.3, Tue Feb 24 -- Added setup.cfg to properly handle markdown readme on pypi page
+v0.2.4, Tue Feb 24 -- Changed to legitimate .rst README, removed setup.cfg
