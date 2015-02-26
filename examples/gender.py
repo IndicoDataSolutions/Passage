@@ -25,7 +25,7 @@ def load_gender_data(ntrain=10000, ntest=10000):
 trX, teX, trY, teY = load_gender_data(ntrain=10000) # Can increase up to 250K or so
 
 tokenizer = Tokenizer(min_df=10, max_features=50000)
-print trX[1:2] #see a blog example
+print trX[1] # see a blog example
 trX = tokenizer.fit_transform(trX)
 teX = tokenizer.transform(teX)
 print tokenizer.inverse_transform(trX[1]) # see what words are kept
@@ -58,4 +58,4 @@ te_preds = model.predict(teX)
 tr_acc = metrics.accuracy_score(trY[:len(teY)], tr_preds > 0.5)
 te_acc = metrics.accuracy_score(teY, te_preds > 0.5)
 
-print tr_acc, te_acc # should be same scores as above
+print tr_acc, te_acc
