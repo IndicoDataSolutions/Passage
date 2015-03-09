@@ -28,7 +28,6 @@ tokenizer = Tokenizer(min_df=10, max_features=50000)
 print trX[1] # see a blog example
 trX = tokenizer.fit_transform(trX)
 teX = tokenizer.transform(teX)
-print tokenizer.inverse_transform(trX[1]) # see what words are kept
 print tokenizer.n_features
 
 layers = [

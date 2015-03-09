@@ -8,6 +8,6 @@
 
 <a href="https://github.com/IndicoDataSolutions/Passage/blob/master/examples/gender.py"><img src="http://i.imgur.com/cEmonmC.jpg" height="300"></a>
 
-[Passage News Group Classification Example](https://github.com/IndicoDataSolutions/Passage/blob/master/examples/newsgroup.py)
+[Passage Newsgroup Classification Example](https://github.com/IndicoDataSolutions/Passage/blob/master/examples/newsgroup.py)
 
 <a href="https://github.com/IndicoDataSolutions/Passage/blob/master/examples/newsgroup.py"><img src="http://i.imgur.com/ByTczHW.jpg" height="300"></a>
