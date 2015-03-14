@@ -13,6 +13,7 @@ from sklearn import metrics
 from passage.preprocessing import Tokenizer
 from passage.layers import Embedding, GatedRecurrent, Dense
 from passage.models import RNN
+from passage.utils import save
 
 tokenizer = Tokenizer(min_df=10, max_features=50000)
 X_train = tokenizer.fit_transform(newsgroups_train.data)
