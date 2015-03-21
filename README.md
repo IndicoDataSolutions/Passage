@@ -59,7 +59,7 @@ Where:
 
 Without sizeable datasets RNNs have difficulty achieving results better than traditional sparse linear models. Below are a few datasets that are appropriately sized, useful for experimentation. Hopefully this list will grow over time, please feel free to propose new datasets for inclusion through either an issue or a pull request.
 
-**__Note__**: __None of these datasets were created by indico, not should their inclusion here indicate any kind of endorsement__
+**__Note__**: __None of these datasets were created by indico, nor should their inclusion here indicate any kind of endorsement__
 
 Blogger Dataset: http://www.cs.biu.ac.il/~koppel/blogs/blogs.zip (Age and gender data)
 
