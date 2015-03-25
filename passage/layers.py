@@ -22,6 +22,23 @@ def theano_one_hot(idx, n):
 
 srng = RandomStreams()
 
+class Generic(object):
+    """ 
+    Useful when processing real valued vectors/matrices/tensors. 
+    See examples/mnist_rnn for example usage
+    """
+
+    def __init__(self, size, n_dim=2, weights=None):
+        self.settings = locals()
+        del self.settings['self']
+        self.input = T.TensorType(theano.config.floatX, (False,)*n_dim)()
+        self.size = size
+        self.n_dim = n_dim
+        self.params = []
+
+    def output(self, dropout_active=False):
+        return self.input       
+
 class Embedding(object):
 
     def __init__(self, size=128, n_features=256, init='uniform', weights=None):
