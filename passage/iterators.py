@@ -14,6 +14,15 @@ def padded(seqs):
     return np.asarray(seqs_padded).transpose(1, 0)
 
 class Linear(object):
+    """
+    Useful for training on real valued data where first dimension is examples, 
+    second dimension is to be iterated over, and third dimension is data vectors.
+
+    size is the number of examples per minibatch
+    shuffle controls whether or not the order of examples is shuffled before iterating over
+    x_dtype is for casting input data
+    y_dtype is for casting target data
+    """
 
     def __init__(self, size=64, shuffle=True, x_dtype=floatX, y_dtype=floatX):
         self.size = size

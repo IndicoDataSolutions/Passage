@@ -2,6 +2,7 @@ import theano
 import theano.tensor as T
 from theano.tensor.extra_ops import repeat
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
+from copy import deepcopy
 
 from theano_utils import shared0s, floatX
 import activations
@@ -24,16 +25,17 @@ srng = RandomStreams()
 
 class Generic(object):
     """ 
-    Useful when processing real valued vectors/matrices/tensors. 
-    See examples/mnist_rnn for example usage
+    Useful when processing real valued vectors see examples/mnist.py for example usage.
+
+    size is input dimensionality
+    weights is used internally for saving/loading
     """
 
-    def __init__(self, size, n_dim=2, weights=None):
+    def __init__(self, size, weights=None):
         self.settings = locals()
         del self.settings['self']
-        self.input = T.TensorType(theano.config.floatX, (False,)*n_dim)()
+        self.input = T.tensor3()
         self.size = size
-        self.n_dim = n_dim
         self.params = []
 
     def output(self, dropout_active=False):
@@ -194,7 +196,7 @@ class LstmRecurrent(object):
 
 class GatedRecurrent(object):
 
-    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., weights=None):
+    def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., direction='forward', weights=None):
         self.settings = locals()
         del self.settings['self']   
         self.activation_str = activation
@@ -206,6 +208,7 @@ class GatedRecurrent(object):
         self.seq_output = seq_output
         self.p_drop = p_drop
         self.weights = weights
+        self.direction = direction
 
     def connect(self, l_in):
         self.l_in = l_in
@@ -246,6 +249,8 @@ class GatedRecurrent(object):
 
     def output(self, dropout_active=False):
         X = self.l_in.output(dropout_active=dropout_active)
+        if self.direction == 'backward':
+            X = X[::-1]
         if self.p_drop > 0. and dropout_active:
             X = dropout(X, self.p_drop)
         x_z = T.dot(X, self.w_z) + self.b_z
@@ -304,4 +309,3 @@ class Dense(object):
             out = out.reshape((shape[0], shape[1], self.size))
 
         return out
-

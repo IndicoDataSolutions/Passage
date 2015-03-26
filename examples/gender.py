@@ -8,19 +8,7 @@ from passage.layers import Embedding, GatedRecurrent, Dense
 from passage.models import RNN
 from passage.utils import load, save
 
-def load_gender_data(ntrain=10000, ntest=10000):
-    file_loc = os.path.dirname(os.path.realpath(__file__))
-    relative_path = "blogger_data_2.csv" # move dataset to examples directory
-    fullpath = os.path.join(file_loc, relative_path)
-    data = pd.read_csv(fullpath, nrows=ntrain+ntest)
-    X = data['text'].values
-    X = [str(x) for x in X] # ugly nan cleaner
-    Y = data['gender'].values
-    trX = X[:-ntest]
-    teX = X[-ntest:]
-    trY = Y[:-ntest]
-    teY = Y[-ntest:]
-    return trX, teX, trY, teY
+from load import load_gender_data
 
 trX, teX, trY, teY = load_gender_data(ntrain=10000) # Can increase up to 250K or so
 
