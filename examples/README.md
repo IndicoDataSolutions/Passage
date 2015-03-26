@@ -11,3 +11,7 @@
 [Passage Newsgroup Classification Example](https://github.com/IndicoDataSolutions/Passage/blob/master/examples/newsgroup.py)
 
 <a href="https://github.com/IndicoDataSolutions/Passage/blob/master/examples/newsgroup.py"><img src="http://i.imgur.com/ByTczHW.jpg" height="300"></a>
+
+[Using Passage on non-text data (MNIST)](https://github.com/IndicoDataSolutions/Passage/blob/master/examples/mnist.py)
+
+<a href="https://github.com/IndicoDataSolutions/Passage/blob/master/examples/mnist.py"><img src="http://i.imgur.com/vOFDzy9.png" height="300"></a>

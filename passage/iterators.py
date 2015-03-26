@@ -13,6 +13,48 @@ def padded(seqs):
         seqs_padded.append(seq)
     return np.asarray(seqs_padded).transpose(1, 0)
 
+class Linear(object):
+    """
+    Useful for training on real valued data where first dimension is examples, 
+    second dimension is to be iterated over, and third dimension is data vectors.
+
+    size is the number of examples per minibatch
+    shuffle controls whether or not the order of examples is shuffled before iterating over
+    x_dtype is for casting input data
+    y_dtype is for casting target data
+    """
+
+    def __init__(self, size=64, shuffle=True, x_dtype=floatX, y_dtype=floatX):
+        self.size = size
+        self.shuffle = shuffle
+        self.x_dtype = x_dtype
+        self.y_dtype = y_dtype
+
+    def iterX(self, X):
+
+        for xmb in iter_data(X, size=self.size):
+            xmb = self.x_dtype(xmb)
+            shape = range(len(xmb.shape))
+            shape[0] = 1
+            shape[1] = 0
+            shape = tuple(shape)
+            xmb = xmb.transpose(*shape)
+            yield xmb
+
+    def iterXY(self, X, Y):
+        
+        if self.shuffle:
+            X, Y = shuffle(X, Y)
+
+        for xmb, ymb in iter_data(X, Y, size=self.size):
+            xmb = self.x_dtype(xmb)
+            shape = range(len(xmb.shape))
+            shape[0] = 1
+            shape[1] = 0
+            shape = tuple(shape)
+            xmb = xmb.transpose(*shape)
+            yield xmb, self.y_dtype(ymb)
+
 class Padded(object):
 
     def __init__(self, size=64, shuffle=True, x_dtype=intX, y_dtype=floatX):
@@ -21,9 +63,9 @@ class Padded(object):
         self.x_dtype = x_dtype
         self.y_dtype = y_dtype
 
-    def iterXY(self, X):
+    def iterX(self, X):
 
-        for xmb, ymb in iter_data(X, size=self.size):
+        for xmb in iter_data(X, size=self.size):
             xmb = padded(xmb)
             yield self.x_dtype(xmb)
 

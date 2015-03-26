@@ -31,7 +31,7 @@ class RNN(object):
             self.updater = updater
 
         if isinstance(iterator, basestring):
-            self.iterator = getattr(iterators, iterator)()
+            self.iterator = case_insensitive_import(iterators, iterator)()
         else:
             self.iterator = iterator
 
@@ -102,7 +102,7 @@ class RNN(object):
         return costs
 
     def predict(self, X):
-        if isinstance(self.iterator, iterators.Padded):
+        if isinstance(self.iterator, iterators.Padded) or isinstance(self.iterator, iterators.Linear):
             return self.predict_iterator(X)
         elif isinstance(self.iterator, iterators.SortedPadded):
             return self.predict_idxs(X)

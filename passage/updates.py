@@ -94,12 +94,13 @@ class NAG(Update):
         updates = []
         grads = T.grad(cost, params)
         grads = clip_norms(grads, self.clipnorm)
-        for p,g in zip(params,grads):
+        for p, g in zip(params, grads):
+            g = self.regularizer.gradient_regularize(p, g)
             m = theano.shared(p.get_value() * 0.)
             v = (self.momentum * m) - (self.lr * g)
             updates.append((m,v))
 
-            updated_p = p + self.momentum * v - self.lr * self.regularizer.gradient_regularize(p, g)
+            updated_p = p + self.momentum * v - self.lr * g
             updated_p = self.regularizer.weight_regularize(updated_p)
             updates.append((p, updated_p))
         return updates
