@@ -1,6 +1,6 @@
 **Passage Examples**
 ===================
-[Slide Deck](https://docs.google.com/presentation/d/1HYfUZLRZRJovQpv5mYxox9bz9erxj7Ak_ZovENMvM90/edit?usp=sharing) & [Video Explanation](https://www.youtube.com/watch?v=VINCQghQRuM)
+[Video Explanation](https://www.youtube.com/watch?v=VINCQghQRuM)
 
 <a href="https://www.youtube.com/watch?v=VINCQghQRuM"><img src="http://i.imgur.com/UGYEeEi.png" height="300"></a>
 
