@@ -309,3 +309,42 @@ class Dense(object):
             out = out.reshape((shape[0], shape[1], self.size))
 
         return out
+
+class BiDirectional(object):
+    """ 
+    Takes a recurrent layer instantiation and replicates it to process its input both forwards and backwards.
+    There are two forms of exposing the output of a bidirectional layer: 
+    Concatenation of the forward and backward states and addition of them.
+    """
+    def __init__(self, recurrent_layer, merge='add', weights=None):
+        self.settings = locals()
+        del self.settings['self'] 
+        self.forward = recurrent_layer
+        self.backward = deepcopy(recurrent_layer)
+        self.backward.direction = 'backward'
+        self.merge = merge
+        if self.merge == 'add':
+            self.size = self.forward.size
+        elif self.merge == 'concatenate':
+            self.size = self.forward.size*2
+        else:
+            raise NotImplementedError
+        self.weights = weights
+
+    def connect(self, l_in):
+        self.forward.connect(l_in)
+        self.backward.connect(l_in)
+        self.params = self.forward.params + self.backward.params
+
+        if self.weights is not None:
+            for param, weight in zip(self.params, self.weights):
+                param.set_value(floatX(weight))   
+
+    def output(self, dropout_active=False):
+        Xf = self.forward.output(dropout_active=dropout_active)
+        Xb = self.backward.output(dropout_active=dropout_active)[::-1]
+
+        if self.merge == 'add':
+            return Xf + Xb
+        else:
+            return T.concatenate([Xf, Xb], axis=2)   

@@ -81,7 +81,7 @@ class RNN(object):
             for xmb, ymb in self.iterator.iterXY(trX, trY):
                 c = self._train(xmb, ymb)
                 epoch_costs.append(c)
-                n += len(ymb)
+                n += xmb.shape[1]
                 if self.verbose >= 2:
                     n_per_sec = n / (time() - t)
                     n_left = len(trY) - n % len(trY)
@@ -114,13 +114,14 @@ class RNN(object):
         for xmb in self.iterator.iterX(X):
             pred = self._predict(xmb)
             preds.append(pred)
-        return np.vstack(preds)
+        return np.concatenate(preds, axis=1)
 
     def predict_idxs(self, X):
         preds = []
         idxs = []
         for xmb, idxmb in self.iterator.iterX(X):
-            pred = self._predict(xmb)
+            pred = self._predict(xmb).transpose(1, 0, 2)
+            print pred.shape
             preds.append(pred)
             idxs.extend(idxmb)
-        return np.vstack(preds)[np.argsort(idxs)]
+        return preds
