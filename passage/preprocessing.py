@@ -1,8 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import theano
 import theano.tensor as T
 import string
 from collections import Counter
+
+punctuation = set(string.punctuation)
+punctuation.add('\n')
+punctuation.add('\t')
+punctuation.add(u'’')
+punctuation.add(u'‘')
+punctuation.add(u'“')
+punctuation.add(u'”')
+punctuation.add(u'´')
+punctuation.add('')
 
 def one_hot(X, n=None, negative_class=0.):
     X = np.asarray(X).flatten()
@@ -22,10 +35,6 @@ def list_index(l, idxs):
     return [l[idx] for idx in idxs]
 
 def tokenize(text):
-    punctuation = set(string.punctuation)
-    punctuation.add('\n')
-    punctuation.add('\t')
-    punctuation.add('')
     tokenized = []
     w = ''
     for t in text:
@@ -149,7 +158,9 @@ class LenFilter(object):
         lens = [len(seq) for seq in data[0]]
         if self.percentile > 0:
             max_len = np.percentile(lens, self.percentile)
-        max_len = np.clip(max_len, self.min_max_len, self.max_len)
+            max_len = np.clip(max_len, self.min_max_len, self.max_len)
+        else:
+            max_len = self.max_len
         valid_idxs = [i for i, l in enumerate(lens) if l <= max_len]
         if len(data) == 1:
             return list_index(data[0], valid_idxs)
