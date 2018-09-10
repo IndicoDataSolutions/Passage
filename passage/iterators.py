@@ -1,21 +1,21 @@
 import numpy as np
 
-from utils import shuffle, iter_data
-from theano_utils import floatX, intX
+from passage.utils import shuffle, iter_data
+from passage.theano_utils import floatX, intX
 
 def padded(seqs):
-    lens = map(len, seqs)
+    lens = [len(seq) for seq in seqs]
     max_len = max(lens)
     seqs_padded = []
     for seq, seq_len in zip(seqs, lens):
-        n_pad = max_len - seq_len 
+        n_pad = max_len - seq_len
         seq = [0] * n_pad + seq
         seqs_padded.append(seq)
-    return np.asarray(seqs_padded).transpose(1, 0)
+    return np.atleast_2d(seqs_padded).transpose(1, 0)
 
 class Linear(object):
     """
-    Useful for training on real valued data where first dimension is examples, 
+    Useful for training on real valued data where first dimension is examples,
     second dimension is to be iterated over, and third dimension is data vectors.
 
     size is the number of examples per minibatch
@@ -42,7 +42,7 @@ class Linear(object):
             yield xmb
 
     def iterXY(self, X, Y):
-        
+
         if self.shuffle:
             X, Y = shuffle(X, Y)
 
@@ -70,7 +70,7 @@ class Padded(object):
             yield self.x_dtype(xmb)
 
     def iterXY(self, X, Y):
-        
+
         if self.shuffle:
             X, Y = shuffle(X, Y)
 
@@ -93,10 +93,10 @@ class SortedPadded(object):
             chunk_idxs = [chunk_idxs[idx] for idx in sort]
             for xmb, idxmb in iter_data(x_chunk, chunk_idxs, size=self.size):
                 xmb = padded(xmb)
-                yield self.x_dtype(xmb), idxmb   
+                yield self.x_dtype(xmb), idxmb
 
     def iterXY(self, X, Y):
-        
+
         if self.shuffle:
             X, Y = shuffle(X, Y)
 
@@ -108,4 +108,4 @@ class SortedPadded(object):
             mb_chunks = shuffle(mb_chunks)
             for xmb, ymb in mb_chunks:
                 xmb = padded(xmb)
-                yield self.x_dtype(xmb), self.y_dtype(ymb)  
+                yield self.x_dtype(xmb), self.y_dtype(ymb)

@@ -22,14 +22,14 @@ def load_mnist(data_dir=None):
         import gzip
         url = 'http://yann.lecun.com/exdb/mnist/'
         fnames = [
-            'train-images-idx3-ubyte.gz', 
-            'train-labels-idx1-ubyte.gz', 
-            't10k-images-idx3-ubyte.gz', 
+            'train-images-idx3-ubyte.gz',
+            'train-labels-idx1-ubyte.gz',
+            't10k-images-idx3-ubyte.gz',
             't10k-labels-idx1-ubyte.gz'
         ]
         for fname in fnames:
             if not os.path.isfile(fname):
-                print 'data_dir not given and file not local - downloading mnist file:', fname
+                print("data_dir not given and file not local - downloading mnist file:", fname)
                 urllib.urlretrieve(url+fname, fname)
         data_dir = ''
     fd = gzip.open(os.path.join(data_dir,'train-images-idx3-ubyte.gz'))
@@ -53,5 +53,5 @@ def load_mnist(data_dir=None):
 
     trX = trX.reshape(-1, 28, 28)
     teX = teX.reshape(-1, 28, 28)
-    
+
     return trX, teX, trY, teY

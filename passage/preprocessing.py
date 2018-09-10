@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import string
+from collections import Counter
 
 import numpy as np
 import theano
 import theano.tensor as T
-import string
-from collections import Counter
 
 punctuation = set(string.punctuation)
 punctuation.add('\n')

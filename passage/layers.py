@@ -4,9 +4,9 @@ from theano.tensor.extra_ops import repeat
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from copy import deepcopy
 
-from theano_utils import shared0s, floatX
-import activations
-import inits
+from passage.theano_utils import shared0s, floatX
+import passage.activations as activations
+import passage.inits as inits
 
 import numpy as np
 
@@ -24,7 +24,7 @@ def theano_one_hot(idx, n):
 srng = RandomStreams()
 
 class Generic(object):
-    """ 
+    """
     Useful when processing real valued vectors see examples/mnist.py for example usage.
 
     size is input dimensionality
@@ -39,7 +39,7 @@ class Generic(object):
         self.params = []
 
     def output(self, dropout_active=False):
-        return self.input       
+        return self.input
 
 class Embedding(object):
 
@@ -100,10 +100,10 @@ class SimpleRecurrent(object):
             self.b_in = shared0s((self.size))
             self.w_rec = self.init((self.size, self.size))
         self.params = [self.h0, self.w_in, self.b_in, self.w_rec]
-        
+
         if self.weights is not None:
             for param, weight in zip(self.params, self.weights):
-                param.set_value(floatX(weight))    
+                param.set_value(floatX(weight))
 
     def step(self, x_t, h_tm1, w):
         h_t = self.activation(x_t + T.dot(h_tm1, w))
@@ -159,13 +159,13 @@ class LstmRecurrent(object):
         self.u_o = self.init((self.size, self.size))
         self.u_c = self.init((self.size, self.size))
 
-        self.params = [self.w_i, self.w_f, self.w_o, self.w_c, 
-            self.u_i, self.u_f, self.u_o, self.u_c,  
+        self.params = [self.w_i, self.w_f, self.w_o, self.w_c,
+            self.u_i, self.u_f, self.u_o, self.u_c,
             self.b_i, self.b_f, self.b_o, self.b_c]
 
         if self.weights is not None:
             for param, weight in zip(self.params, self.weights):
-                param.set_value(floatX(weight))    
+                param.set_value(floatX(weight))
 
     def step(self, xi_t, xf_t, xo_t, xc_t, h_tm1, c_tm1, u_i, u_f, u_o, u_c):
         i_t = self.gate_activation(xi_t + T.dot(h_tm1, u_i))
@@ -183,9 +183,9 @@ class LstmRecurrent(object):
         x_f = T.dot(X, self.w_f) + self.b_f
         x_o = T.dot(X, self.w_o) + self.b_o
         x_c = T.dot(X, self.w_c) + self.b_c
-        [out, cells], _ = theano.scan(self.step, 
-            sequences=[x_i, x_f, x_o, x_c], 
-            outputs_info=[T.alloc(0., X.shape[1], self.size), T.alloc(0., X.shape[1], self.size)], 
+        [out, cells], _ = theano.scan(self.step,
+            sequences=[x_i, x_f, x_o, x_c],
+            outputs_info=[T.alloc(0., X.shape[1], self.size), T.alloc(0., X.shape[1], self.size)],
             non_sequences=[self.u_i, self.u_f, self.u_o, self.u_c],
             truncate_gradient=self.truncate_gradient
         )
@@ -198,7 +198,7 @@ class GatedRecurrent(object):
 
     def __init__(self, size=256, activation='tanh', gate_activation='steeper_sigmoid', init='orthogonal', truncate_gradient=-1, seq_output=False, p_drop=0., direction='forward', weights=None):
         self.settings = locals()
-        del self.settings['self']   
+        del self.settings['self']
         self.activation_str = activation
         self.activation = getattr(activations, activation)
         self.gate_activation = getattr(activations, gate_activation)
@@ -225,19 +225,19 @@ class GatedRecurrent(object):
         self.b_r = shared0s((self.size))
 
         if 'maxout' in self.activation_str:
-            self.w_h = self.init((self.n_in, self.size*2)) 
+            self.w_h = self.init((self.n_in, self.size*2))
             self.u_h = self.init((self.size, self.size*2))
             self.b_h = shared0s((self.size*2))
         else:
-            self.w_h = self.init((self.n_in, self.size)) 
+            self.w_h = self.init((self.n_in, self.size))
             self.u_h = self.init((self.size, self.size))
-            self.b_h = shared0s((self.size))   
+            self.b_h = shared0s((self.size))
 
         self.params = [self.h0, self.w_z, self.w_r, self.w_h, self.u_z, self.u_r, self.u_h, self.b_z, self.b_r, self.b_h]
 
         if self.weights is not None:
             for param, weight in zip(self.params, self.weights):
-                param.set_value(floatX(weight))    
+                param.set_value(floatX(weight))
 
 
     def step(self, xz_t, xr_t, xh_t, h_tm1, u_z, u_r, u_h):
@@ -256,16 +256,16 @@ class GatedRecurrent(object):
         x_z = T.dot(X, self.w_z) + self.b_z
         x_r = T.dot(X, self.w_r) + self.b_r
         x_h = T.dot(X, self.w_h) + self.b_h
-        out, _ = theano.scan(self.step, 
-            sequences=[x_z, x_r, x_h], 
-            outputs_info=[repeat(self.h0, x_h.shape[1], axis=0)], 
+        out, _ = theano.scan(self.step,
+            sequences=[x_z, x_r, x_h],
+            outputs_info=[repeat(self.h0, x_h.shape[1], axis=0)],
             non_sequences=[self.u_z, self.u_r, self.u_h],
             truncate_gradient=self.truncate_gradient
         )
         if self.seq_output:
             return out
         else:
-            return out[-1]  
+            return out[-1]
 
 class Dense(object):
     def __init__(self, size=256, activation='rectify', init='orthogonal', p_drop=0., weights=None):
@@ -288,10 +288,10 @@ class Dense(object):
             self.w = self.init((self.n_in, self.size))
             self.b = shared0s((self.size))
         self.params = [self.w, self.b]
-        
+
         if self.weights is not None:
             for param, weight in zip(self.params, self.weights):
-                param.set_value(floatX(weight))            
+                param.set_value(floatX(weight))
 
     def output(self, pre_act=False, dropout_active=False):
         X = self.l_in.output(dropout_active=dropout_active)

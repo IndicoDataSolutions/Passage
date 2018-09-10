@@ -9,7 +9,7 @@ from load import load_mnist
 
 trX, teX, trY, teY = load_mnist()
 
-#Use generic layer - RNN processes a size 28 vector at a time scanning from left to right 
+#Use generic layer - RNN processes a size 28 vector at a time scanning from left to right
 layers = [
 	Generic(size=28),
 	GatedRecurrent(size=512, p_drop=0.2),
@@ -28,6 +28,3 @@ te_preds = model.predict(teX)
 
 tr_acc = np.mean(trY[:len(teY)] == np.argmax(tr_preds, axis=1))
 te_acc = np.mean(teY == np.argmax(te_preds, axis=1))
-
-# Test accuracy should be between 98.9% and 99.3%
-print 'train accuracy', tr_acc, 'test accuracy', te_acc

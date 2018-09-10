@@ -2,7 +2,7 @@ import theano
 import theano.tensor as T
 import numpy as np
 
-from theano_utils import shared0s, floatX
+from passage.theano_utils import shared0s, floatX
 
 def clip_norm(g, c, n):
     if c > 0:
@@ -176,7 +176,7 @@ class Adagrad(Update):
             p_t = p - (self.lr / T.sqrt(acc_t + self.epsilon)) * g
             p_t = self.regularizer.weight_regularize(p_t)
             updates.append((p, p_t))
-        return updates  
+        return updates
 
 class Adadelta(Update):
 

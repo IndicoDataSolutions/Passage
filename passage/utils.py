@@ -1,13 +1,13 @@
+import pickle
+
+import math
 import numpy as np
 import theano
 import theano.tensor as T
-import cPickle
 
 def iter_data(*data, **kwargs):
     size = kwargs.get('size', 128)
-    batches = len(data[0]) / size
-    if len(data[0]) % size != 0:
-        batches += 1
+    batches = math.ceil(len(data[0]) / size)
 
     for b in range(batches):
         start = b * size
@@ -15,13 +15,11 @@ def iter_data(*data, **kwargs):
         if len(data) == 1:
             yield data[0][start:end]
         else:
-            yield tuple([d[start:end] for d in data]) 
+            yield tuple([d[start:end] for d in data])
 
 def iter_indices(*data, **kwargs):
     size = kwargs.get('size', 128)
-    batches = len(data[0]) / size
-    if len(data[0]) % size != 0:
-        batches += 1
+    batches = math.ceil(len(data[0]) / size)
     for b in range(batches):
         yield b
 
@@ -37,9 +35,10 @@ def case_insensitive_import(module, name):
     return getattr(module, mapping[name.lower()])
 
 def load(path):
-    import layers
-    import models
-    model = cPickle.load(open(path))
+    from passage import layers
+    from passage import models
+    with open(path, 'rb') as f:
+        model = pickle.load(f, encoding="latin-1")
     model_class = getattr(models, model['model'])
     model['config']['layers'] = [getattr(layers, layer['layer'])(**layer['config']) for layer in model['config']['layers']]
     model = model_class(**model['config'])
@@ -55,4 +54,4 @@ def save(model, path):
         layer_configs.append({'layer':layer_name, 'config':layer_config})
     model.settings['layers'] = layer_configs
     serializable_model = {'model':model.__class__.__name__, 'config':model.settings}
-    cPickle.dump(serializable_model, open(path, 'wb'))
+    pickle.dump(serializable_model, open(path, 'wb'))
