@@ -4,14 +4,21 @@ import theano.tensor as T
 import numpy as np
 from time import time
 
-import costs
-import updates
-import iterators 
-from utils import case_insensitive_import, save
-from preprocessing import LenFilter, standardize_targets
+import passage.costs as costs
+import passage.updates as updates
+import passage.iterators as iterators
+
+from passage.utils import case_insensitive_import, save
+from passage.preprocessing import LenFilter, standardize_targets
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
+
+try:
+    basestring
+    BaseString = basestring
+except NameError:
+    BaseString = (str, bytes)
 
 class RNN(object):
 
@@ -20,17 +27,17 @@ class RNN(object):
         del self.settings['self']
         self.layers = layers
 
-        if isinstance(cost, basestring):
+        if isinstance(cost, BaseString):
             self.cost = case_insensitive_import(costs, cost)
         else:
             self.cost = cost
 
-        if isinstance(updater, basestring):
+        if isinstance(updater, BaseString):
             self.updater = case_insensitive_import(updates, updater)()
         else:
             self.updater = updater
 
-        if isinstance(iterator, basestring):
+        if isinstance(iterator, BaseString):
             self.iterator = case_insensitive_import(iterators, iterator)()
         else:
             self.iterator = iterator
@@ -73,7 +80,6 @@ class RNN(object):
         trY = standardize_targets(trY, cost=self.cost)
 
         n = 0.
-        stats = []
         t = time()
         costs = []
         for e in range(n_epochs):
@@ -92,11 +98,11 @@ class RNN(object):
 
             status = "Epoch %d Seen %d samples Avg cost %0.4f Time elapsed %d seconds" % (e, n, np.mean(epoch_costs[-250:]), time() - t)
             if self.verbose >= 2:
-                sys.stdout.write("\r"+status) 
+                sys.stdout.write("\r"+status)
                 sys.stdout.flush()
                 sys.stdout.write("\n")
             elif self.verbose == 1:
-                print status
+                print(status)
             if path and e % snapshot_freq == 0:
                 save(self, "{0}.{1}".format(path, e))
         return costs

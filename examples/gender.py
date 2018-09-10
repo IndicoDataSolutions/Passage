@@ -13,10 +13,8 @@ from load import load_gender_data
 trX, teX, trY, teY = load_gender_data(ntrain=10000) # Can increase up to 250K or so
 
 tokenizer = Tokenizer(min_df=10, max_features=50000)
-print trX[1] # see a blog example
 trX = tokenizer.fit_transform(trX)
 teX = tokenizer.transform(teX)
-print tokenizer.n_features
 
 layers = [
     Embedding(size=128, n_features=tokenizer.n_features),
@@ -33,7 +31,6 @@ for i in range(2):
     tr_acc = metrics.accuracy_score(trY[:len(teY)], tr_preds > 0.5)
     te_acc = metrics.accuracy_score(teY, te_preds > 0.5)
 
-    print i, tr_acc, te_acc
 
 save(model, 'save_test.pkl') # How to save
 
@@ -44,5 +41,3 @@ te_preds = model.predict(teX)
 
 tr_acc = metrics.accuracy_score(trY[:len(teY)], tr_preds > 0.5)
 te_acc = metrics.accuracy_score(teY, te_preds > 0.5)
-
-print tr_acc, te_acc

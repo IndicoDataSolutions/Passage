@@ -3,7 +3,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 
-from theano_utils import sharedX, floatX, intX
+from passage.theano_utils import sharedX, floatX, intX
 
 def uniform(shape, scale=0.05):
     return sharedX(np.random.uniform(low=-scale, high=scale, size=shape))
